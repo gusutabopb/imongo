@@ -1,12 +1,12 @@
-from ipykernel.kernelbase import Kernel
-from pexpect import replwrap, EOF
-
-from subprocess import check_output
-
 import re
 import signal
 import logging
 import uuid
+from subprocess import check_output
+
+from ipykernel.kernelbase import Kernel
+from pexpect import replwrap, EOF
+from tornado.log import LogFormatter as ColoredFormatter
 
 __version__ = '0.1'
 version_pat = re.compile(r'version: (\d+(\.\d+)+)')
