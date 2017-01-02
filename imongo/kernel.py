@@ -16,15 +16,18 @@ def make_logger(name, fname=None) -> logging.Logger:
         fname = name + '.log'
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s: %(message)s')
+
+    file_formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s: %(message)s')
+    FORMAT = '%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s]%(end_color)s %(message)s'
+    stream_formatter = ColoredFormatter(fmt=FORMAT, datefmt='%H:%M:%S')
 
     stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
+    stream_handler.setFormatter(stream_formatter)
     stream_handler.setLevel(logging.DEBUG)
     logger.addHandler(stream_handler)
 
     file_handler = logging.FileHandler(filename=fname, mode='a')
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
 
