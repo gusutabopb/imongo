@@ -48,8 +48,10 @@ class MyREPLWrapper(replwrap.REPLWrapper):
 
     def filter_response(self, res):
         # output = '\n'.join([re.sub('[\w ]*\x1b\[\d*[\w ]*[\r\n]*', '', msg) for msg in res])
-        res = ['\n'.join(msg.splitlines()[1:]) for msg in res]
-        res = '\n\n'.join(list(filter(None, res)))
+        # res = ['\n'.join(msg.splitlines()[1:]) for msg in res]
+        # res = '\n\n\n\n'.join(list(filter(None, res)))
+        sep = re.findall('\x1b\[\d*G', res[1])[-1]
+        res = res[1].split(sep)[-1].strip()
         return res
 
     def _isbufferempty(self):
