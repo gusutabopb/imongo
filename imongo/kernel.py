@@ -45,14 +45,22 @@ class MyREPLWrapper(replwrap.REPLWrapper):
     def __init__(self, *args, **kwargs):
         replwrap.REPLWrapper.__init__(self, *args, **kwargs)
         logger.info('Making MyREPLWrapper')
+        self.args = args
+        self.kwargs = kwargs
 
-    def filter_response(self, res):
-        # output = '\n'.join([re.sub('[\w ]*\x1b\[\d*[\w ]*[\r\n]*', '', msg) for msg in res])
-        # res = ['\n'.join(msg.splitlines()[1:]) for msg in res]
-        # res = '\n\n\n\n'.join(list(filter(None, res)))
-        sep = re.findall('\x1b\[\d*G', res[1])[-1]
-        res = res[1].split(sep)[-1].strip()
-        return res
+    def _filter_response(self, res):
+        msg = re.sub('\[\d+[A-Z]', '', res)
+        msg = re.sub('\[J', '', msg)
+        msg = [l.strip() for l in msg.split('\x1b') if l]
+
+        output = []
+        for l in msg[::-1]:
+            if not output:
+                output.append(l)
+                continue
+            if l not in output[-1]:
+                output.append(l)
+        return output[0]
 
     def _isbufferempty(self):
         return self.child.buffer.strip() == ''
