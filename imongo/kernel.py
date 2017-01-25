@@ -168,7 +168,7 @@ class MongoKernel(Kernel):
         sig = signal.signal(signal.SIGINT, signal.SIG_DFL)
         try:
             prompt = 'mongo{}mongo'.format(uuid.uuid4())
-            cont_prompt = '\.\.\. $'
+            cont_prompt = '... ' # Using expect_exact, so regex (i.e. '\.\.\. $') don't work
             prompt_cmd = "prompt = '{}'".format(prompt)
             dir_func = """function dir(object) {
                               attributes = [];
