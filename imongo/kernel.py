@@ -190,16 +190,23 @@ class MongoKernel(Kernel):
                     'user_expressions': {}}
 
         interrupted = False
+        error = None
         try:
             output = self.mongowrapper.run_command(code.rstrip())
         except KeyboardInterrupt:
-            self.mongowrapper.child.sendintr()
+            self.mongowrapper.child.sendeof()
             interrupted = True
-            self.mongowrapper._expect_prompt()
-            output = self.mongowrapper.child.before
-        except EOF:
-            output = self.mongowrapper.child.before + 'Restarting process...'
+            output = None
+            error = 'KeyboardInterrupt.'
             self._start_mongo()
+        except (EOF, ValueError, RuntimeError) as e:
+            output = None
+            error = e.args[0]
+            self._start_mongo()
+        finally:
+            if error:
+                error_msg = {'name': 'stderr', 'text': error + '\nRestarting mongo shell...'}
+                self.send_response(self.iopub_socket, 'stream', error_msg)
 
         if interrupted:
             return {'status': 'abort', 'execution_count': self.execution_count}
