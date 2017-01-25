@@ -64,6 +64,14 @@ class MyREPLWrapper(replwrap.REPLWrapper):
 
     def _isbufferempty(self):
         return self.child.buffer.strip() == ''
+    def _send_line(self, cmd):
+        try:
+            self.child.sendline(cmd)
+            logger.debug('Command sent. Waiting for prompt')
+        except Exception as e:
+            exeception_msg = 'Unexpected exeception occurred.'
+            logger.error('{}: {}: {}'.format(exeception_msg, e.__class__.__name__, e.args))
+            raise RuntimeError(exeception_msg)
 
     def run_command(self, command, timeout=-1):
         """Send a command to the REPL, wait for and return output.
