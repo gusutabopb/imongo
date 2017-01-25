@@ -63,7 +63,10 @@ class MyREPLWrapper(replwrap.REPLWrapper):
         return output[0]
 
     def _isbufferempty(self):
-        return self.child.buffer.strip() == ''
+        condition1 = self.child.buffer.strip() == '\x1b[47G\x1b[J\x1b[47G'
+        condition2 = self.child.buffer.strip() == ''
+        return condition1 or condition2
+
     def _send_line(self, cmd):
         try:
             self.child.sendline(cmd)
