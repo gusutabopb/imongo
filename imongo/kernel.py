@@ -87,39 +87,43 @@ class MyREPLWrapper(replwrap.REPLWrapper):
           default from the :class:`pexpect.spawn` object (default 30 seconds).
           None means to wait indefinitely.
         """
-        # Split up multiline commands and feed them in bit-by-bit
-        cmdlines = command.splitlines()
-        logger.debug('Command lines: {}'.format(cmdlines))
-        # splitlines ignores trailing newlines - add it back in manually
-        if command.endswith('\n'):
-            cmdlines.append('')
-        if not cmdlines:
-            raise ValueError("No command was given")
+        # Clean input command by removing indentation
+        # There seems to be a limitation with pexepect/mongo when entering
+        # lines longer than 1000 characters. If that is the case, a ValueError
+        # exception is raised.
+        cmd = re.sub('\s{2,}', ' ', ' '.join([l for l in command.splitlines() if l]))
+        logger.debug('Command length: {} chars'.format(len(cmd)))
+        logger.debug('Command: {}'.format(cmd))
+        if len(cmd) > 1000:
+            error = ('Code too long. Please commands with less than 1000 effective chracters.\n'
+                       'Indentation spaces/tabs don\'t count towards "effective" characters.')
+            logger.error(error)
+            raise ValueError(error.replace('\n', ' '))
 
-        res = []
-        self.child.sendline(cmdlines[0])
-        for line in cmdlines[1:]:
-            self._expect_prompt(timeout=timeout)
-            res.append(self.child.before)
-            self.child.sendline(line)
+        self._send_line(cmd)
 
-        # Command was fully submitted, now wait for the next prompt
-        if self._expect_prompt(timeout=timeout) == 1:
-            logger.debug('Erroneous continuation prompt')
-            # We got the continuation prompt - command was incomplete
-            self.child.kill(signal.SIGINT)
-            self._expect_prompt(timeout=1)
-            raise ValueError("Continuation prompt found - input was incomplete:\n"
-                             + command)
+        match = self._expect_prompt(timeout=timeout)
+        logger.debug('Prompt type: {}'.format(match))
 
+        logger.debug('Iterating over message')
+        response = []
         while not self._isbufferempty():
-            res.append(self.child.before)
-            self._expect_prompt()
-            self.child.sendline('')
-        res.append(self.child.before)
-        logger.debug('Response: {}'.format(res))
+            response.append(self.child.before)
+            logger.debug('Buffer not empty, sending blank line')
+            match = self._expect_prompt(timeout=timeout)
+            if match == 1:
+                # If continuation prompt is detected, restart child (by raising ValueError)
+                error = ('Code incomplete. Please enter valid and complete code.\n'
+                           'Continuation prompt functionality not implemented yet.')
+                logger.error(error.replace('\n', ' '))
+                raise ValueError(error)
+            self._send_line('')
+        response.append(self.child.before)
+        response = self._filter_response(''.join(response))
 
-        return self.filter_response(res)
+        logger.debug('Response: {}'.format(response))
+
+        return response
 
 
 # noinspection PyAbstractClass
