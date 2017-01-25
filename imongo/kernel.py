@@ -204,11 +204,10 @@ class MongoKernel(Kernel):
         if interrupted:
             return {'status': 'abort', 'execution_count': self.execution_count}
 
-        if not silent:
-            stream_content = {'name': 'stdout', 'text': output}
-            logger.debug('Stream content: {}'.format(stream_content))
-            self.send_response(self.iopub_socket, 'stream', stream_content)
-
+        if not silent and not error:
+            result = {'data': { "text/plain": output},
+                      'execution_count': self.execution_count}
+            self.send_response(self.iopub_socket, 'execute_result', result)
 
         # TODO: Error catching messages such as the one below:
         #2016-11-14T12:47:11.718+0900 E QUERY    [thread1] ReferenceError: aaa is not defined :
