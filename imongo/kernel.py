@@ -9,7 +9,7 @@ from pexpect import replwrap, EOF
 from tornado.log import LogFormatter as ColoredFormatter
 
 __version__ = '0.1'
-version_pat = re.compile(r'version: (\d+(\.\d+)+)')
+version_pat = re.compile(r'version\D*(\d+(\.\d+)+)')
 
 def make_logger(name, fname=None) -> logging.Logger:
     if fname is None:
