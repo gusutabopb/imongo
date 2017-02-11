@@ -76,6 +76,10 @@ class MyREPLWrapper(replwrap.REPLWrapper):
             logger.error('{}: {}: {}'.format(exeception_msg, e.__class__.__name__, e.args))
             raise RuntimeError(exeception_msg)
 
+    def _expect_prompt(self, timeout=5):
+        return self.child.expect([self.prompt, self.continuation_prompt],
+                                  timeout=timeout)
+
     def run_command(self, command, timeout=-1):
         """Send a command to the REPL, wait for and return output.
 
@@ -168,7 +172,7 @@ class MongoKernel(Kernel):
         sig = signal.signal(signal.SIGINT, signal.SIG_DFL)
         try:
             prompt = 'mongo{}mongo'.format(uuid.uuid4())
-            cont_prompt = '... ' # Using expect_exact, so regex (i.e. '\.\.\. $') don't work
+            cont_prompt = '\.\.\. $'
             prompt_cmd = "prompt = '{}'".format(prompt)
             dir_func = """function dir(object) {
                               attributes = [];
