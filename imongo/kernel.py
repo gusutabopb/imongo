@@ -98,8 +98,13 @@ class MyREPLWrapper(replwrap.REPLWrapper):
         cmd = re.sub('\s{2,}', ' ', ' '.join([l for l in command.splitlines() if l]))
         logger.debug('Command length: {} chars'.format(len(cmd)))
         logger.debug('Command: {}'.format(cmd))
-        if len(cmd) > 1000:
-            error = ('Code too long. Please commands with less than 1000 effective chracters.\n'
+        if len(cmd) > 1024:
+            # TODO: Enable sending lines long lines (>1024 on macOS >4096 on Linux).
+            # This is realated to a buffering issue and seems that can only be solved
+            # by splitting lines, and waiting for the continuation prompt.
+            # However this MAY interfere with how responses are currently received
+            # Ref: http://pexpect.readthedocs.io/en/stable/_modules/pexpect/pty_spawn.html#spawn.send
+            error = ('Code too long. Please commands with less than 1024 effective chracters.\n'
                        'Indentation spaces/tabs don\'t count towards "effective" characters.')
             logger.error(error)
             raise ValueError(error.replace('\n', ' '))
