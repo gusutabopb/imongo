@@ -1,5 +1,6 @@
 import re
 import signal
+import json
 import logging
 import uuid
 from subprocess import check_output
@@ -190,6 +191,38 @@ class MongoKernel(Kernel):
         finally:
             signal.signal(signal.SIGINT, sig)
 
+    @staticmethod
+    def _pretty_output(json_str, show_levels=5):
+        try:
+            assert isinstance(json.loads(json_str), dict)
+            logger.debug('Valid JSON')
+        except Exception as e:
+            params = e.__class__.__name__, e.args
+            logger.debug('_pretty_output failed: {} {}'.format(*params))
+            return None, None
+
+        css = """
+        a              { text-decoration: none; }
+        .disclosure    { color: crimson; font-size: 150%; }
+        .syntax        { color: grey; }
+        .string        { color: red; }
+        .number        { color: cyan; }
+        .boolean       { color: plum; }
+        .key           { color: blue; }
+        .keyword       { color: lightgoldenrodyellow; }
+        .object.syntax { color: lightseagreen; }
+        .array.syntax  { color: lightsalmon; }
+        """
+
+        obj_uuid = str(uuid.uuid4())
+        html_str = '<style>{}></style><div id="{}"></div>'
+        html_str = html_str.format(css, obj_uuid)
+        js_str = 'require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"],' \
+                 ' function() {document.getElementById(\'%s\').appendChild(' \
+                 'renderjson.set_show_to_level(%d)(%s))});'
+        js_str = js_str % (obj_uuid, show_levels, json_str)
+
+        return html_str, js_str
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
         if not code.strip():
@@ -220,9 +253,17 @@ class MongoKernel(Kernel):
         if interrupted:
             return {'status': 'abort', 'execution_count': self.execution_count}
 
-        if not silent and not error:
-            result = {'data': { "text/plain": output},
+        if not silent and output:
+            json_str = '{"foo": "bar", "hoge" : [1,2,3,4], "level1": {"level2": "value2"}}'
+            html_str, js_str = self._pretty_output(json_str)
+            html_msg = {'data': {'text/html': html_str}}
+            js_msg = {'data': {'application/javascript': js_str}}
+            self.send_response(self.iopub_socket, 'display_data', html_msg)
+            self.send_response(self.iopub_socket, 'display_data', js_msg)
+
+            result = {'data': {'text/plain': output},
                       'execution_count': self.execution_count}
+            logger.debug(result)
             self.send_response(self.iopub_socket, 'execute_result', result)
 
         # TODO: Error catching messages such as the one below:
