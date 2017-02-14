@@ -37,7 +37,7 @@ def make_logger(name, fname=None) -> logging.Logger:
 logger = make_logger('IMongo', fname='imongo_kernel.log')
 
 
-class MyREPLWrapper(replwrap.REPLWrapper):
+class MongoShellWrapper(replwrap.REPLWrapper):
     """
     A subclass of REPLWrapper specific for the MongoDB shell.
     run_command is the only method overridden.
@@ -185,8 +185,8 @@ class MongoKernel(Kernel):
                               attributes.sort();
                               return attributes;}"""
             spawn_cmd = """mongo --eval "{}" --shell""".format(';'.join([prompt_cmd, dir_func]))
-            self.mongowrapper = MyREPLWrapper(spawn_cmd, orig_prompt=prompt,
-                                       prompt_change=None, continuation_prompt=cont_prompt)
+            self.mongowrapper = MongoShellWrapper(spawn_cmd, orig_prompt=prompt,
+                                                  prompt_change=None, continuation_prompt=cont_prompt)
         finally:
             signal.signal(signal.SIGINT, sig)
 
