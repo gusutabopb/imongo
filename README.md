@@ -50,4 +50,6 @@ Jupyter to be used with the new kernel by installing a
 
 ## TODO:
 - Implement code completion functionality
+- Fix long command issue
+- Send Mongo shell Javascript errors/exceptions to stderr
 - Add to PyPI

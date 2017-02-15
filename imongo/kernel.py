@@ -26,7 +26,8 @@ class MongoShellWrapper(replwrap.REPLWrapper):
         self.args = args
         self.kwargs = kwargs
 
-    def _filter_response(self, res):
+    @staticmethod
+    def _filter_response(res):
         msg = re.sub('\[\d+[A-Z]', '', res)
         msg = re.sub('\[J', '', msg)
         msg = [l.strip() for l in msg.split('\x1b') if l]
@@ -251,8 +252,11 @@ class MongoKernel(Kernel):
             self.send_response(self.iopub_socket, 'execute_result', result)
 
         # TODO: Error catching messages such as the one below:
-        #2016-11-14T12:47:11.718+0900 E QUERY    [thread1] ReferenceError: aaa is not defined :
-        #@(shell):1:1
+        # 2016-11-14T12:47:11.718+0900 E QUERY    [thread1] ReferenceError: aaa is not defined : @(shell):1:1
+        # 2017-01-25T13:15:50.804+0900 E QUERY    [thread1] SyntaxError: expected expression, got '}' @(shell):1:12
+        # 2017-02-13T22:09:16.483+0900 E QUERY    [main] TypeError: db.find is not a function :
+        # @(shell):1:16
+        # https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 
         return_msg = {'status': 'ok', 'execution_count': self.execution_count,
                       'payload': [], 'user_expressions': {}}
