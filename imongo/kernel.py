@@ -4,6 +4,7 @@ import json
 import uuid
 from subprocess import check_output
 
+import pandas as pd
 from ipykernel.kernelbase import Kernel
 from pexpect import replwrap, EOF
 
@@ -186,6 +187,25 @@ class MongoKernel(Kernel):
         js_str = js_str % (obj_uuid, show_levels, json_str)
 
         return html_str, js_str
+
+    @staticmethod
+    def _parse_shell_output(shell_output):
+        json_loader = utils.exception_logger(json.loads)
+        def parse_isodate(match):
+            unix_date = int(pd.Timestamp(match.group(1)).asm8) // 10 ** 6
+            return '{"$date": %d}' % unix_date
+
+        # TODO: Parse booleans, Binaries, etc
+        output = []
+        for doc in [line for line in shell_output.splitlines() if line]:
+            doc = re.sub('ISODate\(\"(.*?)\"\)', parse_isodate, doc)
+            doc = re.sub('ObjectId\(\"(.*?)\"\)', '{"$oid": "\\1"}', doc)
+            doc = json_loader(doc)
+            if doc:
+                output.append(doc)
+
+        return output
+
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
         if not code.strip():
@@ -217,8 +237,9 @@ class MongoKernel(Kernel):
             return {'status': 'abort', 'execution_count': self.execution_count}
 
         if not silent and output:
-            json_str = '{"foo": "bar", "hoge" : [1,2,3,4], "level1": {"level2": "value2"}}'
-            html_str, js_str = self._pretty_output(json_str)
+            json_data = self._parse_shell_output(output)
+            poutput = self._pretty_output(json_data)
+            html_str, js_str = poutput if poutput else (None, None)
             html_msg = {'data': {'text/html': html_str}}
             js_msg = {'data': {'application/javascript': js_str}}
             self.send_response(self.iopub_socket, 'display_data', html_msg)
