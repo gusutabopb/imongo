@@ -1,42 +1,18 @@
 import re
 import signal
 import json
-import logging
 import uuid
 from subprocess import check_output
 
 from ipykernel.kernelbase import Kernel
 from pexpect import replwrap, EOF
-from tornado.log import LogFormatter as ColoredFormatter
+
+from . import utils
 
 __version__ = '0.1'
 version_pat = re.compile(r'version\D*(\d+(\.\d+)+)')
 
-def make_logger(name, fname=None) -> logging.Logger:
-    if fname is None:
-        fname = name + '.log'
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-
-    file_formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s: %(message)s')
-    FORMAT = '%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s]%(end_color)s %(message)s'
-    stream_formatter = ColoredFormatter(fmt=FORMAT, datefmt='%H:%M:%S')
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(stream_formatter)
-    stream_handler.setLevel(logging.DEBUG)
-    logger.addHandler(stream_handler)
-
-    file_handler = logging.FileHandler(filename=fname, mode='a')
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
-
-    return logger
-
-
-logger = make_logger('IMongo', fname='imongo_kernel.log')
-
+logger = utils.make_logger('IMongo', fname='imongo_kernel.log')
 
 class MongoShellWrapper(replwrap.REPLWrapper):
     """
@@ -201,18 +177,6 @@ class MongoKernel(Kernel):
             logger.debug('_pretty_output failed: {} {}'.format(*params))
             return None, None
 
-        css = """
-        a              { text-decoration: none; }
-        .disclosure    { color: crimson; font-size: 150%; }
-        .syntax        { color: grey; }
-        .string        { color: red; }
-        .number        { color: cyan; }
-        .boolean       { color: plum; }
-        .key           { color: blue; }
-        .keyword       { color: lightgoldenrodyellow; }
-        .object.syntax { color: lightseagreen; }
-        .array.syntax  { color: lightsalmon; }
-        """
 
         obj_uuid = str(uuid.uuid4())
         html_str = '<style>{}></style><div id="{}"></div>'
