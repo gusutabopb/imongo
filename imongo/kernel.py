@@ -168,19 +168,18 @@ class MongoKernel(Kernel):
             signal.signal(signal.SIGINT, sig)
 
     @staticmethod
-    def _pretty_output(json_str, show_levels=5):
-        try:
-            assert isinstance(json.loads(json_str), dict)
+    @utils.exception_logger
+    def _pretty_output(json_data, show_levels=2):
+        json_str = json.dumps(json_data)
+        if json_data:
             logger.debug('Valid JSON')
-        except Exception as e:
-            params = e.__class__.__name__, e.args
-            logger.debug('_pretty_output failed: {} {}'.format(*params))
-            return None, None
-
+        else:
+            logger.debug('Empty JSON')
+            return
 
         obj_uuid = str(uuid.uuid4())
         html_str = '<style>{}></style><div id="{}"></div>'
-        html_str = html_str.format(css, obj_uuid)
+        html_str = html_str.format(utils.css, obj_uuid)
         js_str = 'require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"],' \
                  ' function() {document.getElementById(\'%s\').appendChild(' \
                  'renderjson.set_show_to_level(%d)(%s))});'
