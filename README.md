@@ -1,17 +1,15 @@
 # imongo
-A MongoDB kernel for Jupyter.
+A MongoDB kernel for Jupyter. Mainly for educational purposes.
 
-This kernel wrappes the Mongo shell using 
-[pexpect](https://github.com/pexpect/pexpect).
-
-Meant to be used for educational purposes.
-
-Insipred by [bash_kernel](https://github.com/takluyver/bash_kernel)
- and [ipython_mysql_kernel](https://github.com/mmisono/ipython_mysql_kernel).
+This kernel wraps the Mongo shell using 
+[pexpect](https://github.com/pexpect/pexpect) and was
+insipred by [bash_kernel](https://github.com/takluyver/bash_kernel)
+ and [ipython_mysql_kernel](https://github.com/mmisono/ipython_mysql_kernel). 
+ Uses [Renderjson](https://github.com/caldwell/renderjson) for JSON pretty-printing.
 
 ## How to install
 
-### Requirements
+### Major requirements
 IMongo requires [Jupyter](http://jupyter.org/) and [MongoDB](https://www.mongodb.com).
 
 #### MongoDB
@@ -28,7 +26,10 @@ $ conda create -n imongoenv jupyter
 
 ### Kernel installation
 
-Using `pip`: `pip install git+https://github.com/gusutabopb/imongo`
+Using `pip`:
+```
+ $ pip install git+https://github.com/gusutabopb/imongo
+ ```
 
 Using `setuptools`:
 ```
@@ -43,8 +44,12 @@ Jupyter to be used with the new kernel by installing a
 
 ## Uninstall:
 
-- Remove library: `pip uninstall imongo`
-- Remove kernel spec: `jupyter kernelspec remove imongo`
+```
+# Remove library: 
+$ pip uninstall imongo
+# Remove kernel spec
+$ jupyter kernelspec remove imongo
+```
 
 -----------
 
