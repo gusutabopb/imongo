@@ -15,11 +15,13 @@ version_pat = re.compile(r'version\D*(\d+(\.\d+)+)')
 
 logger = utils.make_logger('IMongo', fname='imongo_kernel.log')
 
+
 class MongoShellWrapper(replwrap.REPLWrapper):
     """
     A subclass of REPLWrapper specific for the MongoDB shell.
     run_command is the only method overridden.
     """
+
     def __init__(self, *args, **kwargs):
         replwrap.REPLWrapper.__init__(self, *args, **kwargs)
         logger.info('Making MyREPLWrapper')
@@ -57,7 +59,7 @@ class MongoShellWrapper(replwrap.REPLWrapper):
 
     def _expect_prompt(self, timeout=5):
         return self.child.expect([self.prompt, self.continuation_prompt],
-                                  timeout=timeout)
+                                 timeout=timeout)
 
     def run_command(self, command, timeout=-1):
         """Send a command to the REPL, wait for and return output.
@@ -84,7 +86,7 @@ class MongoShellWrapper(replwrap.REPLWrapper):
             # However this MAY interfere with how responses are currently received
             # Ref: http://pexpect.readthedocs.io/en/stable/_modules/pexpect/pty_spawn.html#spawn.send
             error = ('Code too long. Please commands with less than 1024 effective chracters.\n'
-                       'Indentation spaces/tabs don\'t count towards "effective" characters.')
+                     'Indentation spaces/tabs don\'t count towards "effective" characters.')
             logger.error(error)
             raise ValueError(error.replace('\n', ' '))
 
@@ -102,7 +104,7 @@ class MongoShellWrapper(replwrap.REPLWrapper):
             if match == 1:
                 # If continuation prompt is detected, restart child (by raising ValueError)
                 error = ('Code incomplete. Please enter valid and complete code.\n'
-                           'Continuation prompt functionality not implemented yet.')
+                         'Continuation prompt functionality not implemented yet.')
                 logger.error(error.replace('\n', ' '))
                 raise ValueError(error)
             self._send_line('')
@@ -192,6 +194,7 @@ class MongoKernel(Kernel):
     @staticmethod
     def _parse_shell_output(shell_output):
         json_loader = utils.exception_logger(json.loads)
+
         def parse_isodate(match):
             unix_date = int(pd.Timestamp(match.group(1)).asm8) // 10 ** 6
             return '{"$date": %d}' % unix_date
@@ -263,10 +266,8 @@ class MongoKernel(Kernel):
         logger.debug('Return message: {}'.format(return_msg))
         return return_msg
 
-
     def do_complete(self, code, cursor_pos):
         # TODO: Implement. Currently not working.
-
 
         code = code[:cursor_pos]
         default = {'matches': [], 'cursor_start': 0,
