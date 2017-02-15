@@ -1,29 +1,35 @@
 #!/usr/bin/env python
-
 import json
 import os
-
+import sys
 from setuptools import setup
-from jupyter_client.kernelspec import KernelSpecManager
-from IPython.utils.tempdir import TemporaryDirectory
+from setuptools.command.install import install
+
+if sys.version_info.major != 3:
+    sys.exit('Support Python 3 only')
 
 
-def install_kernel_spec(user=True, prefix=None):
-    kernel_json = {
-        "argv": ["python", "-m", "imongo", "-f", "{connection_file}"],
-        "codemirror_mode": "shell",
-        "display_name": "IMongo"
-    }
-    with TemporaryDirectory() as td:
-        os.chmod(td, 0o755)
-        with open(os.path.join(td, 'kernel.json'), 'w') as f:
-            json.dump(kernel_json, f, sort_keys=True)
-        ksm = KernelSpecManager()
-        ksm.install_kernel_spec(td, 'imongo', user=user, replace=True, prefix=prefix)
+class Installer(install):
+    def run(self):
+        # Regular install
+        install.run(self)
 
+        # Post install
+        print('Installing Jupyter kernelspec')
+        from jupyter_client.kernelspec import KernelSpecManager
+        from IPython.utils.tempdir import TemporaryDirectory
+        kernel_json = {
+            "argv": ["python", "-m", "imongo", "-f", "{connection_file}"],
+            "codemirror_mode": "shell",
+            "display_name": "IMongo"
+        }
+        with TemporaryDirectory() as td:
+            os.chmod(td, 0o755)
+            with open(os.path.join(td, 'kernel.json'), 'w') as f:
+                json.dump(kernel_json, f, sort_keys=True)
+            ksm = KernelSpecManager()
+            ksm.install_kernel_spec(td, 'imongo', user=self.user, replace=True, prefix=self.prefix)
 
-print('Installing Jupyter kernelspec')
-install_kernel_spec()
 
 with open('README.md', 'r') as f:
     long_description = f.read()
@@ -36,8 +42,11 @@ setup(name='imongo',
       author_email='gusutabopb@gmail.com',
       url='https://github.com/gusutabopb/imongo',
       packages=['imongo'],
+      cmdclass={'install': Installer},
       license='MIT',
-      install_requires=['jupyter>=1.0.0'],
+      install_requires=['jupyter>=1.0.0',
+                        'pandas>=0.19',
+                        'pexpect>=4.2.1'],
       classifiers=[
           'Intended Audience :: Developers',
           'Intended Audience :: System Administrators',
