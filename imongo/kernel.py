@@ -201,15 +201,17 @@ class MongoKernel(Kernel):
             return '{"$date": %d}' % unix_date
 
         # TODO: Parse booleans, Binaries, etc
-        output = []
-        for doc in [line for line in shell_output.splitlines() if line]:
-            doc = re.sub('ISODate\(\"(.*?)\"\)', parse_isodate, doc)
-            doc = re.sub('ObjectId\(\"(.*?)\"\)', '{"$oid": "\\1"}', doc)
-            doc = json_loader(doc)
-            if doc:
-                output.append(doc)
-
-        return output
+        try:
+            return json.loads(shell_output)
+        except json.JSONDecodeError:
+            output = []
+            for doc in [line for line in shell_output.splitlines() if line]:
+                doc = re.sub('ISODate\(\"(.*?)\"\)', parse_isodate, doc)
+                doc = re.sub('ObjectId\(\"(.*?)\"\)', '{"$oid": "\\1"}', doc)
+                doc = json_loader(doc)
+                if doc:
+                    output.append(doc)
+            return output
 
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
