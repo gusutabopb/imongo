@@ -192,19 +192,13 @@ class MongoKernel(Kernel):
             return list()
 
         options = []
-        for option in config:
-            if isinstance(option, dict):
-                for key, value in tuple(option.items()):
-                    options.append(f'--{key} {value}')
-                    if key == 'eval':
-                        raise ValueError('Use of --eval is disabled')
-            elif isinstance(option, str):
-                if option == 'shell':
-                    pass
-                else:
-                    options.append(f'--{option}')
+        for key, value in config.items():
+            if key == 'shell':
+                continue
+            elif not value:
+                options.append(f'--{key}')
             else:
-                raise ValueError(f'Invalid option: {option}')
+                options.append(f'--{key} {value}')
         return options
 
     @staticmethod
