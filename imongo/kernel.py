@@ -72,11 +72,12 @@ class MongoShellWrapper(replwrap.REPLWrapper):
           default from the :class:`pexpect.spawn` object (default 30 seconds).
           None means to wait indefinitely.
         """
-        # Clean input command by removing indentation
+        # Clean input command by removing indentation and comment lines
         # There seems to be a limitation with pexepect/mongo when entering
         # lines longer than 1000 characters. If that is the case, a ValueError
         # exception is raised.
-        cmd = re.sub('\s{2,}', ' ', ' '.join([l for l in command.splitlines() if l]))
+        cmd_lines = [l for l in command.splitlines() if l and not l.startswith('//')]
+        cmd = re.sub('\s{2,}', ' ', ' '.join(cmd_lines))
         logger.debug('Command length: {} chars'.format(len(cmd)))
         logger.debug('Command: {}'.format(cmd))
         if len(cmd) > 1024:
