@@ -45,6 +45,7 @@ setup(name='imongo',
       cmdclass={'install': Installer},
       license='MIT',
       install_requires=['jupyter>=1.0.0',
+                        'ipykernel',
                         'pandas>=0.19',
                         'pexpect>=4.2.1'],
       classifiers=[

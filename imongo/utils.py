@@ -19,10 +19,10 @@ def make_logger(name, fname=None) -> logging.Logger:
     stream_handler.setLevel(logging.DEBUG)
     logger.addHandler(stream_handler)
 
-    file_handler = logging.FileHandler(filename=fname, mode='a')
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
+    # file_handler = logging.FileHandler(filename=fname, mode='a')
+    # file_handler.setFormatter(file_formatter)
+    # file_handler.setLevel(logging.DEBUG)
+    # logger.addHandler(file_handler)
 
     return logger
 

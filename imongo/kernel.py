@@ -1,7 +1,7 @@
+import json
 import os
 import re
 import signal
-import json
 import uuid
 from subprocess import check_output
 
@@ -119,7 +119,6 @@ class MongoShellWrapper(replwrap.REPLWrapper):
         return response
 
 
-# noinspection PyAbstractClass
 class MongoKernel(Kernel):
     implementation = 'IMongo'
     implementation_version = __version__
@@ -148,33 +147,31 @@ class MongoKernel(Kernel):
         self._start_mongo()
 
     def _start_mongo(self):
-        # Signal handlers are inherited by forked processes, and we can't easily
-        # reset it from the subprocess. Since kernelapp ignores SIGINT except in
-        # message handlers, we need to temporarily reset the SIGINT handler here
-        # so that bash and its children are interruptible.
-        # sig = signal.signal(signal.SIGINT, signal.SIG_DFL)
+        """Spwans `mongo` subprocess"""
 
-        # dir_func is an assitant Javascript function to be used bydo_complete.
+        prompt = 'mongo{}mongo'.format(uuid.uuid4())
+        cont_prompt = '\.\.\. $'
+        prompt_cmd = "prompt = '{}'".format(prompt)
+
+        # dir_func is an assitant Javascript function to be used by do_complete.
         # May be a slightly hackish approach.
         # http://stackoverflow.com/questions/5523747/equivalent-of-pythons-dir-in-javascript
-
-        sig = signal.signal(signal.SIGINT, signal.SIG_DFL)
+        dir_func = """function dir(object) {
+                          attributes = [];
+                          for (attr in object) {attributes.push(attr);}
+                          attributes.sort();
+                          return attributes;}"""
         try:
-            prompt = 'mongo{}mongo'.format(uuid.uuid4())
-            cont_prompt = '\.\.\. $'
-            prompt_cmd = "prompt = '{}'".format(prompt)
-            dir_func = """function dir(object) {
-                              attributes = [];
-                              for (attr in object) {attributes.push(attr);}
-                              attributes.sort();
-                              return attributes;}"""
-            spawn_cmd = """mongo --eval "{}" --shell""".format(';'.join([prompt_cmd, dir_func]))
-            self.mongowrapper = MongoShellWrapper(spawn_cmd, orig_prompt=prompt,
             spawn_cmd = ['mongo', f'--eval "{prompt_cmd}; {dir_func}"']
             spawn_cmd += self._parse_spawn_options() + ['--shell']
             self.mongowrapper = MongoShellWrapper(' '.join(spawn_cmd), orig_prompt=prompt,
                                                   prompt_change=None, continuation_prompt=cont_prompt)
         finally:
+            # Signal handlers are inherited by forked processes, and we can't easily
+            # reset it from the subprocess. Since kernelapp ignores SIGINT except in
+            # message handlers, we need to temporarily reset the SIGINT handler here
+            # so that bash and its children are interruptible.
+            sig = signal.signal(signal.SIGINT, signal.SIG_DFL)
             signal.signal(signal.SIGINT, sig)
 
     @staticmethod
