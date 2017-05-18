@@ -225,18 +225,15 @@ class MongoKernel(Kernel):
     def _parse_shell_output(shell_output):
         json_loader = utils.exception_logger(json.loads)
 
-        def parse_isodate(match):
-            unix_date = int(pd.Timestamp(match.group(1)).asm8) // 10 ** 6
-            return '{"$date": %d}' % unix_date
-
         # TODO: Parse booleans, Binaries, etc
         try:
             return json.loads(shell_output)
         except json.JSONDecodeError:
             output = []
             for doc in [line for line in shell_output.splitlines() if line]:
-                doc = re.sub('ISODate\(\"(.*?)\"\)', parse_isodate, doc)
+                doc = re.sub('ISODate\(\"(.*?)\"\)', '{"$date": "\\1"}', doc)
                 doc = re.sub('ObjectId\(\"(.*?)\"\)', '{"$oid": "\\1"}', doc)
+                doc = re.sub('NumberLong\(\"(.*?)\"\)', '{"$numberLong": "\\1"}', doc)
                 doc = json_loader(doc)
                 if doc:
                     output.append(doc)
