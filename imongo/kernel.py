@@ -1,3 +1,4 @@
+import os
 import re
 import signal
 import json
@@ -5,6 +6,7 @@ import uuid
 from subprocess import check_output
 
 import pandas as pd
+import yaml
 from ipykernel.kernelbase import Kernel
 from pexpect import replwrap, EOF
 
@@ -168,9 +170,45 @@ class MongoKernel(Kernel):
                               return attributes;}"""
             spawn_cmd = """mongo --eval "{}" --shell""".format(';'.join([prompt_cmd, dir_func]))
             self.mongowrapper = MongoShellWrapper(spawn_cmd, orig_prompt=prompt,
+            spawn_cmd = ['mongo', f'--eval "{prompt_cmd}; {dir_func}"']
+            spawn_cmd += self._parse_spawn_options() + ['--shell']
+            self.mongowrapper = MongoShellWrapper(' '.join(spawn_cmd), orig_prompt=prompt,
                                                   prompt_change=None, continuation_prompt=cont_prompt)
         finally:
             signal.signal(signal.SIGINT, sig)
+
+    @staticmethod
+    def _parse_spawn_options():
+        """
+        Parses spawn YAML command options from the default Jupyter configuration directory.
+        http://jupyter.readthedocs.io/en/latest/projects/jupyter-directories.html#configuration-files
+        """
+        config_dir = os.environ.get('JUPYTER_CONFIG_DIR')
+        if config_dir is None:
+            config_dir = '.jupyter'
+        config_path = os.path.join(os.path.expanduser('~'), config_dir, 'imongo_config.yml')
+        logger.info(f'Trying to load {config_path}')
+        try:
+            config = yaml.load(open(config_path))
+        except FileNotFoundError:
+            logger.info('Using default configuration')
+            return list()
+
+        options = []
+        for option in config:
+            if isinstance(option, dict):
+                for key, value in tuple(option.items()):
+                    options.append(f'--{key} {value}')
+                    if key == 'eval':
+                        raise ValueError('Use of --eval is disabled')
+            elif isinstance(option, str):
+                if option == 'shell':
+                    pass
+                else:
+                    options.append(f'--{option}')
+            else:
+                raise ValueError(f'Invalid option: {option}')
+        return options
 
     @staticmethod
     @utils.exception_logger
