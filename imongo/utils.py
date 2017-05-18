@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 from tornado.log import LogFormatter as ColoredFormatter
 
+logger = logging.getLogger('IMongo')
 
 def make_logger(name, fname=None) -> logging.Logger:
     if fname is None:
@@ -24,9 +25,6 @@ def make_logger(name, fname=None) -> logging.Logger:
     logger.addHandler(file_handler)
 
     return logger
-
-
-logger = make_logger('IMongo', fname='imongo_kernel.log')
 
 
 def exception_logger(func):
