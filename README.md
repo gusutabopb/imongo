@@ -7,6 +7,8 @@ insipred by [bash_kernel](https://github.com/takluyver/bash_kernel)
  and [ipython_mysql_kernel](https://github.com/mmisono/ipython_mysql_kernel). 
  Uses [Renderjson](https://github.com/caldwell/renderjson) for JSON pretty-printing.
 
+![IMongo in action](screenshot.png)
+
 ## How to install
 
 ### Major requirements
