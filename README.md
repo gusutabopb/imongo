@@ -22,19 +22,19 @@ For other platforms, please refer to the MongoDB [documentation](https://docs.mo
 #### IPython/Jupyter
 I recommend using the [Anaconda](https://www.continuum.io/downloads) Python distribution.
 To setup a minimal test environment for the kernel:
-```
+```bash
 $ conda create -n imongoenv jupyter
 ```
 
 #### Kernel installation
 
 Using `pip`:
-```
+```bash
  $ pip install git+https://github.com/gusutabopb/imongo
  ```
 
 Using `setuptools`:
-```
+```bash
 $ git clone https://github.com/gusutabopb/imongo
 $ cd imongo
 $ python setup.py install
@@ -67,7 +67,7 @@ If `imongo_config.yml` doesn't exist or is empty, IMongo will attempt to connect
 
 ## Uninstall:
 
-```
+```bash
 # Remove library: 
 $ pip uninstall imongo
 # Remove kernel spec
