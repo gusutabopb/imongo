@@ -54,9 +54,9 @@ class MongoShellWrapper(replwrap.REPLWrapper):
             self.child.sendline(cmd)
             logger.debug('Command sent. Waiting for prompt')
         except Exception as e:
-            exeception_msg = 'Unexpected exeception occurred.'
-            logger.error('{}: {}: {}'.format(exeception_msg, e.__class__.__name__, e.args))
-            raise RuntimeError(exeception_msg)
+            exception_msg = 'Unexpected exception occurred.'
+            logger.error('{}: {}: {}'.format(exception_msg, e.__class__.__name__, e.args))
+            raise RuntimeError(exception_msg)
 
     def _expect_prompt(self, timeout=5):
         return self.child.expect([self.prompt, self.continuation_prompt],
@@ -83,7 +83,7 @@ class MongoShellWrapper(replwrap.REPLWrapper):
         logger.debug('Command: {}'.format(cmd))
         if len(cmd) > 1024:
             # TODO: Enable sending lines long lines (>1024 on macOS >4096 on Linux).
-            # This is realated to a buffering issue and seems that can only be solved
+            # This is related to a buffering issue and seems that can only be solved
             # by splitting lines, and waiting for the continuation prompt.
             # However this MAY interfere with how responses are currently received
             # Ref: http://pexpect.readthedocs.io/en/stable/_modules/pexpect/pty_spawn.html#spawn.send
@@ -146,13 +146,13 @@ class MongoKernel(Kernel):
         self._start_mongo()
 
     def _start_mongo(self):
-        """Spwans `mongo` subprocess"""
+        """Spawns `mongo` subprocess"""
 
         prompt = 'mongo{}mongo'.format(uuid.uuid4())
         cont_prompt = '\.\.\. $'
         prompt_cmd = "prompt = '{}'".format(prompt)
 
-        # dir_func is an assitant Javascript function to be used by do_complete.
+        # dir_func is an assistant Javascript function to be used by do_complete.
         # May be a slightly hackish approach.
         # http://stackoverflow.com/questions/5523747/equivalent-of-pythons-dir-in-javascript
         dir_func = """function dir(object) {
