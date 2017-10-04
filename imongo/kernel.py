@@ -214,7 +214,10 @@ class MongoKernel(Kernel):
 
         obj_uuid = str(uuid.uuid4())
         html_str = '<style>{}></style><div id="{}"></div>'
-        html_str = html_str.format(utils.css, obj_uuid)
+        css_path = os.path.join(os.path.split(__file__)[0], 'style.css')
+        with open(css_path) as f:
+            css = f.read().replace(' ', '').replace('\n', '')
+            html_str = html_str.format(css, obj_uuid)
         js_str = 'require(["https://rawgit.com/caldwell/renderjson/master/renderjson.js"],' \
                  ' function() {document.getElementById(\'%s\').appendChild(' \
                  'renderjson.set_show_to_level(%d)(%s))});'

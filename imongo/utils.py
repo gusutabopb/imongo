@@ -36,28 +36,3 @@ def exception_logger(func):
             return None
 
     return catcher
-
-
-css = """
-a.disclosure:link         { text-decoration: none; }
-a.disclosure:visited      { text-decoration: none; }
-.disclosure    { color: #337AB7; font-size: 150%;}
-.syntax        { color: grey; }
-.string        { color: #9A334F; }
-.number        { color: #5C9632; }
-.boolean       { color: #AA9739; }
-.key           { color: #403075; }
-.keyword       { color: #AA9739; }
-.object.syntax { color: #337AB7; }
-.array.syntax  { color: #337AB7; }
-""".replace(' ', '').replace('\n', '')
-
-# .disclosure    ("⊕", "⊖") FIFTH
-# .syntax        (",", ":", "{", "}", "[", "]") GREY
-# .string        (includes quotes)      SECONDARY
-# .number                               THIRD
-# .boolean        FIFTH  AA9739
-# .key           (object key)           PRIMARY
-# .keyword       ("null", "undefined") FIFTH
-# .object.syntax ("{", "}") GREY
-# .array.syntax  ("[", "]") GREY
