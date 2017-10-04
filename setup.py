@@ -5,8 +5,8 @@ import sys
 from setuptools import setup
 from setuptools.command.install import install
 
-if sys.version_info.major != 3:
-    sys.exit('Support Python 3 only')
+if sys.version_info.major != 3 or sys.version_info.minor < 6:
+    sys.exit('IMongo supports Python 3.6+ only')
 
 
 class Installer(install):
@@ -53,6 +53,6 @@ setup(name='imongo',
           'Intended Audience :: System Administrators',
           'Intended Audience :: Science/Research',
           'Development Status :: 3 - Alpha',
-          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6',
           'Topic :: System :: Shells',
       ])
