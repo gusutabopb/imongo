@@ -46,7 +46,7 @@ To install Jupyter, IMongo and all other dependencies, use ``pip install``:
 
 .. code:: bash
 
-    $ pip install imongo
+    $ pip install imongo-kernel
 
 Install Jupyter and IMongo Kernel using ``conda``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -59,7 +59,7 @@ either Anaconda_ or Miniconda_ installed.
 
     $ conda create -n imongo jupyter "python>3.6"
     $ source activate imongo
-    $ pip install imongo
+    $ pip install imongo-kernel
 
 Both methods install the ``imongo`` package and configure Jupyter to be
 used with the new kernel by installing a `kernel spec`_.

@@ -34,7 +34,7 @@ class Installer(install):
 with open('README.rst', 'r') as f:
     long_description = f.read()
 
-setup(name='imongo',
+setup(name='imongo-kernel',
       version='0.1.0',
       description='A MongoDB kernel for Jupyter',
       long_description=long_description,
