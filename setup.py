@@ -31,7 +31,7 @@ class Installer(install):
             ksm.install_kernel_spec(td, 'imongo', user=self.user, replace=True, prefix=self.prefix)
 
 
-with open('README.md', 'r') as f:
+with open('README.rst', 'r') as f:
     long_description = f.read()
 
 setup(name='imongo',
