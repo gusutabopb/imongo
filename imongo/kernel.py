@@ -14,7 +14,9 @@ from . import utils
 __version__ = '0.1'
 version_pat = re.compile(r'version\D*(\d+(\.\d+)+)')
 
-logger = utils.make_logger('IMongo', fname='imongo_kernel.log')
+log_file = os.path.join(os.path.split(__file__)[0], 'imongo_kernel.log')
+logger = utils.make_logger('IMongo', fname=log_file)
+logger.info(f'Logging to {log_file}')
 
 
 class MongoShellWrapper(replwrap.REPLWrapper):

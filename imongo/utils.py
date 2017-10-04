@@ -5,8 +5,6 @@ from tornado.log import LogFormatter as ColoredFormatter
 logger = logging.getLogger('IMongo')
 
 def make_logger(name, fname=None) -> logging.Logger:
-    if fname is None:
-        fname = name + '.log'
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
@@ -16,13 +14,13 @@ def make_logger(name, fname=None) -> logging.Logger:
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(stream_formatter)
-    stream_handler.setLevel(logging.DEBUG)
+    stream_handler.setLevel(logging.INFO)
     logger.addHandler(stream_handler)
 
-    # file_handler = logging.FileHandler(filename=fname, mode='a')
-    # file_handler.setFormatter(file_formatter)
-    # file_handler.setLevel(logging.DEBUG)
-    # logger.addHandler(file_handler)
+    file_handler = logging.FileHandler(filename=fname, mode='a')
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
 
     return logger
 
