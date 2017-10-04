@@ -5,7 +5,6 @@ import signal
 import uuid
 from subprocess import check_output
 
-import pandas as pd
 import yaml
 from ipykernel.kernelbase import Kernel
 from pexpect import replwrap, EOF
