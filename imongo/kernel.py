@@ -11,7 +11,7 @@ from pexpect import replwrap, EOF
 
 from . import utils
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 version_pat = re.compile(r'version\D*(\d+(\.\d+)+)')
 
 log_file = os.path.join(os.path.split(__file__)[0], 'imongo_kernel.log')
@@ -57,7 +57,8 @@ class MongoShellWrapper(replwrap.REPLWrapper):
             logger.debug('Command sent. Waiting for prompt')
         except Exception as e:
             exception_msg = 'Unexpected exception occurred.'
-            logger.error('{}: {}: {}'.format(exception_msg, e.__class__.__name__, e.args))
+            logger.error('{}: {}: {}'.format(
+                exception_msg, e.__class__.__name__, e.args))
             raise RuntimeError(exception_msg)
 
     def _expect_prompt(self, timeout=5):
@@ -79,7 +80,8 @@ class MongoShellWrapper(replwrap.REPLWrapper):
         # There seems to be a limitation with pexepect/mongo when entering
         # lines longer than 1000 characters. If that is the case, a ValueError
         # exception is raised.
-        cmd_lines = [l for l in command.splitlines() if l and not l.startswith('//')]
+        cmd_lines = [l for l in command.splitlines(
+        ) if l and not l.startswith('//')]
         cmd = re.sub('\s{2,}', ' ', ' '.join(cmd_lines))
         logger.debug('Command length: {} chars'.format(len(cmd)))
         logger.debug('Command: {}'.format(cmd))
@@ -88,7 +90,8 @@ class MongoShellWrapper(replwrap.REPLWrapper):
             # This is related to a buffering issue and seems that can only be solved
             # by splitting lines, and waiting for the continuation prompt.
             # However this MAY interfere with how responses are currently received
-            # Ref: http://pexpect.readthedocs.io/en/stable/_modules/pexpect/pty_spawn.html#spawn.send
+            # Ref:
+            # http://pexpect.readthedocs.io/en/stable/_modules/pexpect/pty_spawn.html#spawn.send
             error = ('Code too long. Please commands with less than 1024 effective chracters.\n'
                      'Indentation spaces/tabs don\'t count towards "effective" characters.')
             logger.error(error)
@@ -106,7 +109,8 @@ class MongoShellWrapper(replwrap.REPLWrapper):
             logger.debug('Buffer not empty, sending blank line')
             match = self._expect_prompt(timeout=timeout)
             if match == 1:
-                # If continuation prompt is detected, restart child (by raising ValueError)
+                # If continuation prompt is detected, restart child (by raising
+                # ValueError)
                 error = ('Code incomplete. Please enter valid and complete code.\n'
                          'Continuation prompt functionality not implemented yet.')
                 logger.error(error.replace('\n', ' '))
@@ -137,7 +141,8 @@ class MongoKernel(Kernel):
     @property
     def banner(self):
         if self._banner is None:
-            self._banner = check_output(['mongo', '--version']).decode('utf-8').strip()
+            self._banner = check_output(
+                ['mongo', '--version']).decode('utf-8').strip()
         return self._banner
 
     def __init__(self, **kwargs):
@@ -184,7 +189,8 @@ class MongoKernel(Kernel):
         config_dir = os.environ.get('JUPYTER_CONFIG_DIR')
         if config_dir is None:
             config_dir = '.jupyter'
-        config_path = os.path.join(os.path.expanduser('~'), config_dir, 'imongo_config.yml')
+        config_path = os.path.join(os.path.expanduser(
+            '~'), config_dir, 'imongo_config.yml')
         logger.info(f'Trying to load {config_path}')
         try:
             config = yaml.load(open(config_path))
@@ -237,11 +243,32 @@ class MongoKernel(Kernel):
             for doc in [line for line in shell_output.splitlines() if line]:
                 doc = re.sub('ISODate\(\"(.*?)\"\)', '{"$date": "\\1"}', doc)
                 doc = re.sub('ObjectId\(\"(.*?)\"\)', '{"$oid": "\\1"}', doc)
-                doc = re.sub('NumberLong\(\"(.*?)\"\)', '{"$numberLong": "\\1"}', doc)
+                doc = re.sub('NumberLong\(\"(.*?)\"\)',
+                             '{"$numberLong": "\\1"}', doc)
                 doc = json_loader(doc)
                 if doc:
                     output.append(doc)
             return output
+
+    def run_shell_command(self, cmd_lines):
+        """Execute given commads line-wise
+
+        :param list cmd_lines: A shell command per line. Currently, each line 
+        is executed in a separate child process. 
+        Note, at the moment splitting shell commands across several lines with 
+        backslashes is not supported.
+        """        
+        import sys
+        from subprocess import Popen, PIPE
+        sys_encoding = sys.getdefaultencoding()
+
+        response = []
+        for l in cmd_lines:
+            process = Popen(l.split(), stdout=PIPE, stderr=PIPE)
+            stdout, stderr = process.communicate()
+            response += stdout.decode(sys_encoding)
+        response = ''.join(response)
+        return response
 
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
@@ -253,8 +280,16 @@ class MongoKernel(Kernel):
 
         interrupted = False
         error = None
+        was_shell_cmd = False
+        
         try:
-            output = self.mongowrapper.run_command(code.rstrip())
+            code_lines = [l for l in code.strip().splitlines() if l]
+            if code_lines and code_lines[0].strip() == '%%bash':
+                # Execute shell commands in case of `%%bash` magic
+                was_shell_cmd = True
+                output = self.run_shell_command(code_lines[1:])
+            else:
+                output = self.mongowrapper.run_command(code.rstrip())
         except KeyboardInterrupt:
             self.mongowrapper.child.sendeof()
             interrupted = True
@@ -267,13 +302,22 @@ class MongoKernel(Kernel):
             self._start_mongo()
         finally:
             if error:
-                error_msg = {'name': 'stderr', 'text': error + '\nRestarting mongo shell...'}
+                error_msg = {'name': 'stderr', 'text': error +
+                             '\nRestarting mongo shell...'}
                 self.send_response(self.iopub_socket, 'stream', error_msg)
 
         if interrupted:
             return {'status': 'abort', 'execution_count': self.execution_count}
 
-        if not silent and output:
+        if was_shell_cmd and output:
+            # Do not do any parsing into fancy JSON strings for visualization
+            # in case of shell commands
+            result = {'data': {'text/plain': output},
+                      'execution_count': self.execution_count}
+            logger.debug(result)
+            self.send_response(self.iopub_socket, 'execute_result', result)
+
+        if not silent and not was_shell_cmd and output:
             json_data = self._parse_shell_output(output)
             poutput = self._pretty_output(json_data)
             html_str, js_str = poutput if poutput else (None, None)
