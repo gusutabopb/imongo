@@ -47,6 +47,15 @@ To install Jupyter, IMongo and all other dependencies, use ``pip install``:
 .. code:: bash
 
     $ pip install imongo-kernel
+    
+**For now, it seems like there is an issue with the installation via pip. For now, you can try to install it this way :**
+
+.. code:: bash
+
+    $ git clone https://github.com/gusutabopb/imongo
+    $ cd imongo
+    $ python setup.py install
+   
 
 Install Jupyter and IMongo Kernel using ``conda``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
