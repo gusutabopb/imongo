@@ -16,7 +16,6 @@ It uses Renderjson_ for JSON pretty-printing.
 .. figure:: img/Screenshot-1.png
    :alt: IMongo in action
    :width: 50 %
-
 .. figure:: img/Screenshot-2.png
    :alt: IMongo in action
    :width: 50 %
