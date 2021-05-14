@@ -13,11 +13,14 @@ It uses Renderjson_ for JSON pretty-printing.
 .. _Renderjson: https://github.com/caldwell/renderjson
 
 
-.. figure:: img/screenshot-1.png
+.. figure:: img/Screenshot-1.png
    :alt: IMongo in action
+   :width: 50 %
 
-.. figure:: img/screenshot-2.png
+.. figure:: img/Screenshot-2.png
    :alt: IMongo in action
+   :width: 50 %
+
 
    IMongo in action
 
