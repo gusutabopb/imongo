@@ -11,10 +11,34 @@ from pexpect import replwrap, EOF
 
 from . import utils
 
+# for changing path of storage location
+import pathlib
+import sys
 __version__ = '0.1'
 version_pat = re.compile(r'version\D*(\d+(\.\d+)+)')
 
-log_file = os.path.join(os.path.split(__file__)[0], 'imongo_kernel.log')
+def get_logdir() -> pathlib.Path:
+
+    """
+    Returns a parent directory path
+    where persistent application data can be stored.
+
+    # linux: ~/.local/share/imongo/imongo_kernel.log
+    # macOS: ~/Library/Application Support/imongo/imongo_kernel.log
+    # windows: C:/Users/<USER>/AppData/Roaming/imongo/imongo_kernel.log
+    """
+
+    home = pathlib.Path.home()
+
+    if sys.platform == "win32":
+        return home / "AppData/Roaming/imongo/imongo_kernel.log"
+    elif sys.platform == "linux":
+        return home / ".local/share/imongo/imongo_kernel.log"
+    elif sys.platform == "darwin":
+        return home / "Library/Application Support/imongo/imongo_kernel.log"
+
+# Changed the log file path to avoid permission errors in linux(Temporary change for convenience).
+log_file = str(get_logdir())
 logger = utils.make_logger('IMongo', fname=log_file)
 logger.info(f'Logging to {log_file}')
 
@@ -277,16 +301,19 @@ class MongoKernel(Kernel):
             json_data = self._parse_shell_output(output)
             poutput = self._pretty_output(json_data)
             html_str, js_str = poutput if poutput else (None, None)
-            html_msg = {'data': {'text/html': html_str}}
-            js_msg = {'data': {'application/javascript': js_str}}
-            self.send_response(self.iopub_socket, 'display_data', html_msg)
-            self.send_response(self.iopub_socket, 'display_data', js_msg)
+            html_msg = {'text': {'text/html': html_str},'name':"html_str"}
+            js_msg = {'text': {'application/javascript': js_str},'name':"js_str"}
+            self.send_response(self.iopub_socket, 'update_display_data', html_msg)
+            self.send_response(self.iopub_socket, 'update_display_data', js_msg)
 
-            result = {'data': {'text/plain': output},
+            result = {'text':  output,
+                      'name':"Output",
                       'execution_count': self.execution_count}
+            result_stream = {'text':  output,
+                      'name':"Output"}
             logger.debug(result)
-            self.send_response(self.iopub_socket, 'execute_result', result)
-
+            #self.send_response(self.iopub_socket, 'execute_result', result)
+            self.send_response(self.iopub_socket,'stream',result_stream)
         # TODO: Error catching messages such as the one below:
         # 2016-11-14T12:47:11.718+0900 E QUERY    [thread1] ReferenceError: aaa is not defined : @(shell):1:1
         # 2017-01-25T13:15:50.804+0900 E QUERY    [thread1] SyntaxError: expected expression, got '}' @(shell):1:12
