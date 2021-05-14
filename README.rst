@@ -13,7 +13,10 @@ It uses Renderjson_ for JSON pretty-printing.
 .. _Renderjson: https://github.com/caldwell/renderjson
 
 
-.. figure:: screenshot.png
+.. figure:: img/screenshot-1.png
+   :alt: IMongo in action
+
+.. figure:: img/screenshot-2.png
    :alt: IMongo in action
 
    IMongo in action
@@ -22,7 +25,10 @@ Changes in My Fork
 -------------
 
 1. This fork is updated for compatibility with new version of Jupyter NoteBook.
-2. The logging file is now created at a different location for easy debugging.
+2. The log file is now created at a different location for easy debugging.
+3. Some Syntax Errors are reflected normally.
+4. NoteBook/Lab/Console mode work well.
+5. Some Formatting is lost in this process (As of this commit).
 
 How to install
 --------------
@@ -57,9 +63,6 @@ To install Jupyter, IMongo and all other dependencies, use ``pip install``:
     $ python setup.py install
     # (currently tested on linux, works flawlessly)
     $ sudo python setup.py install
-
-Install Jupyter and IMongo Kernel using ``conda``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 Configuration (optional)
