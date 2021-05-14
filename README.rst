@@ -18,6 +18,12 @@ It uses Renderjson_ for JSON pretty-printing.
 
    IMongo in action
 
+Changes in My Fork 
+-------------
+
+1. This fork is updated for compatibility with new version of Jupyter NoteBook.
+2. The logging file is now created at a different location for easy debugging.
+
 How to install
 --------------
 
@@ -46,27 +52,14 @@ To install Jupyter, IMongo and all other dependencies, use ``pip install``:
 
 .. code:: bash
 
-    $ pip install imongo-kernel
+    $ git clone https://github.com/Abhi-1U/imongo
+    $ cd imongo
+    $ python setup.py install
+    # (currently tested on linux, works flawlessly)
+    $ sudo python setup.py install
 
 Install Jupyter and IMongo Kernel using ``conda``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Although the installation with ``pip`` works fine , we recommend using the
-``conda`` package manager to create a virtual environment. You need to have
-either Anaconda_ or Miniconda_ installed.
-
-.. code:: bash
-
-    $ conda create -n imongo jupyter "python>3.6"
-    $ source activate imongo
-    $ pip install imongo-kernel
-
-Both methods install the ``imongo`` package and configure Jupyter to be
-used with the new kernel by installing a `kernel spec`_.
-
-.. _Anaconda: https://www.anaconda.com/download
-.. _Miniconda: https://conda.io/miniconda.html
-.. _`kernel spec`: https://jupyter-client.readthedocs.io/en/latest/kernels.html#kernel-specs
 
 
 Configuration (optional)
