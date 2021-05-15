@@ -1,7 +1,7 @@
 import logging
 from functools import wraps
 from tornado.log import LogFormatter as ColoredFormatter
-
+import os
 logger = logging.getLogger('IMongo')
 
 def make_logger(name, fname=None) -> logging.Logger:
@@ -16,12 +16,17 @@ def make_logger(name, fname=None) -> logging.Logger:
     stream_handler.setFormatter(stream_formatter)
     stream_handler.setLevel(logging.INFO)
     logger.addHandler(stream_handler)
-
-    file_handler = logging.FileHandler(filename=fname, mode='a')
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
-
+    try:
+        file_handler = logging.FileHandler(filename=fname, mode='a')
+        file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(logging.DEBUG)
+        logger.addHandler(file_handler)
+    except FileNotFoundError as f:
+        os.makedirs(os.path.dirname(fname), exist_ok=True)
+        file_handler = logging.FileHandler(filename=fname, mode='w+')
+        file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(logging.DEBUG)
+        logger.addHandler(file_handler)
     return logger
 
 
